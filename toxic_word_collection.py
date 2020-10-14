@@ -54,7 +54,7 @@ def words_and_occurrences(list):
     """
     organized_list = quick_sort(list)
     word_count = {}
-    write_file = os.path.join("data", "words_and_occurrences")
+    write_file = os.path.join("data", "words_and_occurrences.csv")
     unique_list = set(organized_list)
 
     for word in unique_list:
@@ -64,6 +64,7 @@ def words_and_occurrences(list):
     # inside. tuples being filled with word in the first value and their count in the second.
 
     with open(write_file, "w") as file:  # writing into a file the dictionary for an easier visualization of occurrences
+        file.write('word,count\n')
         for words, count in sort_dict:
             file.write(words + " " + str(count) + "\n")
 
@@ -78,7 +79,7 @@ def words_and_occurrences_modified(list):
     """
     organized_list = quick_sort(list)
     word_count = {}
-    write_file = os.path.join("data", "words_and_occurrences_modified")
+    write_file = os.path.join("data", "words_and_occurrences_modified.csv")
     unique_list = set(organized_list)
     final_dict = {}
 
@@ -89,6 +90,7 @@ def words_and_occurrences_modified(list):
     # inside. tuples being filled with word in the first value and their count in the second.
 
     with open(write_file, "w") as file:  # writing into a file the dictionary for an easier visualization of occurrences
+        file.write('word,count\n')
         for words, count in sort_dict:
             if count > 1:
                 file.write(words + " " + str(count) + "\n")
@@ -115,4 +117,4 @@ if __name__ == '__main__':
     x = create_toxic_list(file_path)
     dictionary_of_words = words_and_occurrences(x)
     greater_dictionary = words_and_occurrences_modified(x)
-    create_histogram(greater_dictionary)
+    # create_histogram(greater_dictionary)
