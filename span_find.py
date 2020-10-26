@@ -34,6 +34,9 @@ def generate_spans(read_file, write_file):
     trial['toxic'] = [extract_toxic_span(span_list, text) for span_list, text in zip(trial['spans'], trial['text'])]
     trial.to_csv(write_file)
 
+def max_text_length(read_file):
+    trial = pd.read_csv(read_file)
+    return max(trial['text'])
 
 if __name__ == '__main__':
     generate_spans(os.path.join('data', 'tsd_trial.csv'),
