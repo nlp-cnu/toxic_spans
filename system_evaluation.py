@@ -14,6 +14,7 @@ prediction = [0, 701, 702, 703, 704, 705, 706, 707, 708]
 def score_response(post, ground_truth, prediction):
     """
     Evaluation for a single response
+    :param post: str that contains the post data
     :param ground_truth: ground truth for a post
     :param prediction: system prediction for a post
     :return: F1 score for a single truth/prediction pair
