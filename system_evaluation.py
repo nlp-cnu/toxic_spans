@@ -5,11 +5,10 @@
 """
 
 import numpy as np
-import pandas as pd
 
 post = '"Wythe thinks Republican members of the House should settle their differences in caucus meetings — which are private."  That statement should scare the h*ll out of  any voter.  Another advocate for a state government functioning  behind closed doors is exactly who we do not need in the Alaska Legislature.  The  system she apparently adores (the secretive standing caucus system)has just about pounded this state into the ground.  Also, does she understand caucus membership is all about crushing any minority view and has little to do with party platforms and everything to do with the quid pro quo of trading toady behavior for spending in deals that are done behind closed doors?  Stupid is as stupid does..........'
 ground_truth = [685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708]
-prediction = [0, 701, 702, 703, 704, 705, 706, 707, 708]
+prediction = []
 
 
 def score_response(post, ground_truth, prediction):
@@ -64,21 +63,29 @@ def score_response(post, ground_truth, prediction):
 def alt_evaluation_technique(ground_truth, prediction):
     """
         Evaluation for a single response
-        :param post: str that contains the post data
         :param ground_truth: ground truth for a post
         :param prediction: system prediction for a post
         :return: F1 score for a single truth/prediction pair
     """
-    true_pos = sum([index in ground_truth for index in prediction])
-    false_pos = sum([index not in ground_truth for index in prediction])
-    false_neg = sum([index not in prediction for index in ground_truth])
+    if len(ground_truth) == 0 and len(prediction) == 0:
+        return 1
+    # If a system passes a non-empty prediction set when the ground truth set is empty, system score is 0
+    # If a system passes an empty prediction set when there is a non-empty ground truth set, system score is 0
+    elif (len(ground_truth) == 0 and len(prediction) != 0) or (len(ground_truth) != 0 and len(prediction) == 0):
+        return 0
+    else:
+        true_pos = sum([index in ground_truth for index in prediction])
+        if true_pos == 0:
+            return 0
+        false_pos = sum([index not in ground_truth for index in prediction])
+        false_neg = sum([index not in prediction for index in ground_truth])
 
-    precision = true_pos / (true_pos + false_pos)
-    # Recall is calculated
-    recall = true_pos / (true_pos + false_neg)
-    # The F1 score is calculated and returned
-    print('true pos:{}, false pos:{}, false neg:{}'.format(true_pos, false_pos, false_neg))
-    return (2 * precision * recall) / (precision + recall)
+        precision = true_pos / (true_pos + false_pos)
+        # Recall is calculated
+        recall = true_pos / (true_pos + false_neg)
+        # The F1 score is calculated and returned
+        print('true pos:{}, false pos:{}, false neg:{}'.format(true_pos, false_pos, false_neg))
+        return (2 * precision * recall) / (precision + recall)
 
 
 def system_evaluation(gt_file_path, pred_file_path):
