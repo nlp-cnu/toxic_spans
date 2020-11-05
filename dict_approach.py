@@ -77,7 +77,7 @@ def compare_data(eval_path, train_path, write_path):
     :param eval_path: evaluation texts from the previous method
     :param train_path: training texts from the previous method
     :param write_path: path in which the user would like to write the results to
-    :return:
+    :return: master_list: 2d list of all indices
     """
     toxic_dict = create_toxic_dict(train_path)
     list_of_toxic = toxic_dict.keys()
@@ -93,6 +93,7 @@ def compare_data(eval_path, train_path, write_path):
     eval = pd.read_csv(eval_path)
     print(list_of_toxic)
     indices = []
+    master_list = []
     list_of_texts = [i for i in eval['text']]
     with open(write_path, 'w') as file:
         for text in list_of_texts:
@@ -113,12 +114,14 @@ def compare_data(eval_path, train_path, write_path):
                             indices.append(i)
 
             indices.sort()
+            master_list.append(indices)
             list_in_string = "["
             for i in indices:
                 list_in_string += str(i) + ","
             file.write(list_in_string[:-1] + "]")  # writing the indices of the toxic words
             indices = []
             file.write('\n')
+    return master_list
 
 
 if __name__ == '__main__':
@@ -129,4 +132,5 @@ if __name__ == '__main__':
     generate_spans_modified(path)
     split_file(path)
     create_toxic_dict(train_path)
-    compare_data(eval_path, train_path, comparison)
+    print(compare_data(eval_path, train_path, comparison))
+

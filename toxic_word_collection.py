@@ -4,7 +4,7 @@
 @date 10/13/2020
 """
 import os
-from src import span_find as sf
+import span_find as sf
 import matplotlib.pyplot as plt
 import pandas as pd
 from ast import literal_eval
