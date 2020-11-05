@@ -91,7 +91,7 @@ def compare_data(eval_path, train_path, write_path):
                    "leg", "does", "been", "built", "art", "e he'", "because"]
 
     eval = pd.read_csv(eval_path)
-    print(list_of_toxic)
+    # print(list_of_toxic)
     indices = []
     master_list = []
     list_of_texts = [i for i in eval['text']]
@@ -104,8 +104,8 @@ def compare_data(eval_path, train_path, write_path):
                     index = text.index(toxic)  # gets the index of the first letter of the toxic word in the text
                     length_toxic = len(toxic)  # gets the length of the toxic word
 
-                    print('toxic word:', toxic)  # prints the actual toxic word from the list
-                    print('toxic from text:', text[index:index + length_toxic])  # prints the toxic word taken from
+                    # print('toxic word:', toxic)  # prints the actual toxic word from the list
+                    # print('toxic from text:', text[index:index + length_toxic])  # prints the toxic word taken from
                     # the text snippet
 
                     for i in range(index, index + length_toxic):  # appends the indices to a list
