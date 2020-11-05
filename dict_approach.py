@@ -92,26 +92,32 @@ def compare_data(eval_path, train_path, write_path):
 
     eval = pd.read_csv(eval_path)
     print(list_of_toxic)
+    indices = []
     list_of_texts = [i for i in eval['text']]
     with open(write_path, 'w') as file:
         for text in list_of_texts:
             file.write(text + '\t')  # writes the text snippet into the file
+            index_lists = "["
             for toxic in list_of_toxic:  # for loop which finds toxic words from dict in the text snippet
                 if (toxic in text) and (toxic not in ignore_list):
                     index = text.index(toxic)  # gets the index of the first letter of the toxic word in the text
                     length_toxic = len(toxic)  # gets the length of the toxic word
+
                     print('toxic word:', toxic)  # prints the actual toxic word from the list
                     print('toxic from text:', text[index:index + length_toxic])  # prints the toxic word taken from
                     # the text snippet
-                    index_lists = "["
-                    indices = [i for i in range(index, index + length_toxic)]
-                    for i in indices:
-                        if i != indices[-1]:
-                            index_lists += str(i) + ","
-                        else:
-                            index_lists += str(i)
-                    index_lists += "]"
-                    file.write(index_lists)  # writing the indices of the toxic words
+
+                    for i in range(index, index + length_toxic):  # appends the indices to a list
+                        if i not in indices:
+                            # if a specific index is there, it doesn't append it, makes "idiot" turn to "idiots"
+                            indices.append(i)
+
+            indices.sort()
+            list_in_string = "["
+            for i in indices:
+                list_in_string += str(i) + ","
+            file.write(list_in_string[:-1] + "]")  # writing the indices of the toxic words
+            indices = []
             file.write('\n')
 
 
