@@ -3,8 +3,8 @@
 @author Rafael Diaz
 @date 10/18/2020
 """
-from src import toxic_word_collection as twc
-from src import span_find as sf
+import toxic_word_collection as twc
+import span_find as sf
 from ast import literal_eval
 import pandas as pd
 import math
