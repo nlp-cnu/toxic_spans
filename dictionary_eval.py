@@ -3,7 +3,6 @@
 @author rafaeldiaz
 @date 11/05/2020
 """
-import cross_validation as cv
 import dict_approach as da
 import system_evaluation as se
 import pandas as pd
