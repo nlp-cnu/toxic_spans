@@ -8,6 +8,7 @@ import dict_approach as da
 import system_evaluation as se
 import pandas as pd
 from ast import literal_eval
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -29,9 +30,10 @@ if __name__ == '__main__':
         truth = []
         for item in series:
             truth.append(literal_eval(item))
-        print(truth)
         # feed those two results into the evaluation script
 
         # eval script needs (text, truth, prediction)
+        list_f1 = []
         for list_index, post in enumerate(eval['text']):
-            se.score_response(post, truth[list_index], prediction[list_index])
+            list_f1.append(se.score_response(post, truth[list_index], prediction[list_index]))
+        print("For {} as training, {} as evaluation, the F1 score was {}".format(train_path, eval_path, np.mean(list_f1)))

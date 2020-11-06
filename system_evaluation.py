@@ -6,9 +6,9 @@
 
 import numpy as np
 
-post = '"Wythe thinks Republican members of the House should settle their differences in caucus meetings — which are private."  That statement should scare the h*ll out of  any voter.  Another advocate for a state government functioning  behind closed doors is exactly who we do not need in the Alaska Legislature.  The  system she apparently adores (the secretive standing caucus system)has just about pounded this state into the ground.  Also, does she understand caucus membership is all about crushing any minority view and has little to do with party platforms and everything to do with the quid pro quo of trading toady behavior for spending in deals that are done behind closed doors?  Stupid is as stupid does..........'
-ground_truth = [685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708]
-prediction = []
+# post = '"Wythe thinks Republican members of the House should settle their differences in caucus meetings — which are private."  That statement should scare the h*ll out of  any voter.  Another advocate for a state government functioning  behind closed doors is exactly who we do not need in the Alaska Legislature.  The  system she apparently adores (the secretive standing caucus system)has just about pounded this state into the ground.  Also, does she understand caucus membership is all about crushing any minority view and has little to do with party platforms and everything to do with the quid pro quo of trading toady behavior for spending in deals that are done behind closed doors?  Stupid is as stupid does..........'
+# ground_truth = [685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708]
+# prediction = []
 
 
 def score_response(post, ground_truth, prediction):
@@ -56,7 +56,7 @@ def score_response(post, ground_truth, prediction):
         # Recall is calculated
         recall = true_pos / (true_pos + false_neg)
         # The F1 score is calculated and returned
-        print('true pos:{}, false pos:{}, false neg:{}'.format(true_pos, false_pos, false_neg))
+        # print('true pos:{}, false pos:{}, false neg:{}'.format(true_pos, false_pos, false_neg))
         return (2 * precision * recall) / (precision + recall)
 
 
@@ -84,7 +84,7 @@ def alt_evaluation_technique(ground_truth, prediction):
         # Recall is calculated
         recall = true_pos / (true_pos + false_neg)
         # The F1 score is calculated and returned
-        print('true pos:{}, false pos:{}, false neg:{}'.format(true_pos, false_pos, false_neg))
+        # print('true pos:{}, false pos:{}, false neg:{}'.format(true_pos, false_pos, false_neg))
         return (2 * precision * recall) / (precision + recall)
 
 
@@ -100,6 +100,6 @@ def system_evaluation(gt_file_path, pred_file_path):
 
     return f1_scores, np.mean(f1_scores)
 
-
-print('F1 score is:', score_response(post, ground_truth, prediction))
-print('Alt score is:', alt_evaluation_technique(ground_truth, prediction))
+#
+# print('F1 score is:', score_response(post, ground_truth, prediction))
+# print('Alt score is:', alt_evaluation_technique(ground_truth, prediction))
