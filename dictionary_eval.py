@@ -3,15 +3,39 @@
 @author rafaeldiaz
 @date 11/05/2020
 """
+import cross_validation as cv
 import dict_approach as da
 import system_evaluation as se
 import pandas as pd
 from ast import literal_eval
 import numpy as np
+import os
 
 if __name__ == '__main__':
     # first separate file into buckets.
     # it is already separated on my machine from using cross_validation.py
+    training_data_path = os.path.join("data", "combined_data.csv")
+    five_buckets = cv.divide_data(training_data_path)
+
+    # train_1234.csv | eval_5.csv
+    cv.create_csv_files(five_buckets[0], five_buckets[1], five_buckets[2], five_buckets[3], five_buckets[4],
+                        'train_1234.csv', 'eval_5.csv')
+
+    # train_1235.csv | eval_4.csv
+    cv.create_csv_files(five_buckets[0], five_buckets[1], five_buckets[2], five_buckets[4], five_buckets[3],
+                        'train_1235.csv', 'eval_4.csv')
+
+    # train_1245.csv | eval_3.csv
+    cv.create_csv_files(five_buckets[0], five_buckets[1], five_buckets[3], five_buckets[4], five_buckets[2],
+                        'train_1245.csv', 'eval_3.csv')
+
+    # train_1345.csv | eval_2.csv
+    cv.create_csv_files(five_buckets[0], five_buckets[2], five_buckets[3], five_buckets[4], five_buckets[1],
+                        'train_1345.csv', 'eval_2.csv')
+
+    # train_2345.csv | eval_1.csv
+    cv.create_csv_files(five_buckets[1], five_buckets[2], five_buckets[3], five_buckets[4], five_buckets[0],
+                        'train_2345.csv', 'eval_1.csv')
     # with those buckets, use a for loop to iterate through each combination
     overall_f1 = []
     train_paths = ["train_1234.csv", "train_1235.csv", "train_1245.csv", "train_1345.csv", "train_2345.csv"]
