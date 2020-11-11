@@ -9,11 +9,11 @@ import pandas as pd
 from ast import literal_eval
 import numpy as np
 
-
 if __name__ == '__main__':
     # first separate file into buckets.
     # it is already separated on my machine from using cross_validation.py
     # with those buckets, use a for loop to iterate through each combination
+    overall_f1 = []
     train_paths = ["train_1234.csv", "train_1235.csv", "train_1245.csv", "train_1345.csv", "train_2345.csv"]
     for index, i in enumerate(range(1, 6)):
 
@@ -35,4 +35,7 @@ if __name__ == '__main__':
         list_f1 = []
         for list_index, post in enumerate(eval['text']):
             list_f1.append(se.score_response(post, truth[list_index], prediction[list_index]))
-        print("For {} as training, {} as evaluation, the F1 score was {}".format(train_path, eval_path, np.mean(list_f1)))
+        overall_f1.append(np.mean(list_f1))
+        print(
+            "For {} as training, {} as evaluation, the F1 score was {}".format(train_path, eval_path, np.mean(list_f1)))
+    print("Overall F1 Score {}".format(np.mean(overall_f1)))
