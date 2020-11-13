@@ -16,13 +16,18 @@ def read_spans(read_file):
 
     read = pd.read_csv(read_file)
 
+    print(read)
 
 
 if __name__ == "__main__":
+    path = os.path.join('data', 'combined_data.csv')
+    read_spans(path)
     print("Placeholder")
 
-    # first we want to read our given file and find the toxic words from the text.
+    # first find spans in text
 
-    # then, with that knowledge, we want to read the text, and if the word is considered toxic via spans,
-    # we should assign it with a toxic token, otherwise assign with a 0 
+    # second, tokenize each word in a line,
 
+    # third, write to a file each word and their respective token
+    # note, for now, we may want to limit how many lines we do as a test basis and then figure out how to organize the
+    # complete file from there.
