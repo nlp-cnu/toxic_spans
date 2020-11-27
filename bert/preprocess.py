@@ -106,7 +106,8 @@ def tag_toxic_spans(text, toxic_span):
     b_tox = 'B-Tox'
     i_tox = 'I-Tox'
     out = 'O'
-    # Assignes the previous tag to an Out
+    # Assigns the previous tag to an Out
+    tag = out
     prev_tag = out
     # iterates over all the tokens and spans in the list
     for token, token_span in token_span_tuple_list:
@@ -115,13 +116,36 @@ def tag_toxic_spans(text, toxic_span):
         if check:
             # if the previous tag was an Out, B-Tox is assigned, otherwise I-Tox is assigned
             if prev_tag == out:
-                token_tags.append((token, b_tox))
+                tag = b_tox
                 prev_tag = b_tox
             else:
-                token_tags.append((token, i_tox))
+                tag = i_tox
                 prev_tag = i_tox
         # If the check fails, the token is assigned an Out
         else:
-            token_tags.append((token, out))
+            tag = out
             prev_tag = out
+        token_tags.append(tag)
     return token_tags
+
+
+def format_bert(read_file, write_file):
+    """
+    Converts a file into expected bert format
+    :param write_file: File to write to
+    :param read_file: The tsd_file to be converted
+    :return: Returns a pandas dataframe formatted properly
+    """
+    initial_df = read_raw_data(read_file)
+    spans = initial_df['spans']
+    texts = initial_df['text']
+    with open(write_file, 'a', newline='') as f:
+        for i, text in enumerate(texts):
+            tokens = tokenize_text(text)
+            token_tags = tag_toxic_spans(text, spans[i])
+            temp_df = pd.DataFrame()
+            temp_df['ind'] = np.arange(1, len(tokens) + 1)
+            temp_df['tokens'] = tokens
+            temp_df['tags'] = token_tags
+            temp_df.to_csv(f, sep='\t', index=False, header=False)
+            f.write(os.linesep)
