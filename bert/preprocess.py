@@ -144,8 +144,9 @@ def format_bert(read_file, write_file):
             tokens = tokenize_text(text)
             token_tags = tag_toxic_spans(text, spans[i])
             temp_df = pd.DataFrame()
-            temp_df['ind'] = np.arange(1, len(tokens) + 1)
+            # temp_df['ind'] = np.arange(1, len(tokens) + 1)
             temp_df['tokens'] = tokens
             temp_df['tags'] = token_tags
-            temp_df.to_csv(f, sep='\t', index=False, header=False)
+            # temp_df['dummy'] = np.full([len(tokens)], 'O')
+            temp_df.to_csv(f, sep=' ', index=False, header=False)
             f.write(os.linesep)
