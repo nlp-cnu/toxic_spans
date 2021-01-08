@@ -3,6 +3,7 @@ from ast import literal_eval
 
 import pandas as pd
 import numpy as np
+import transformers
 
 from nltk.tokenize import TweetTokenizer
 
@@ -103,28 +104,19 @@ def tag_toxic_spans(text, toxic_span):
     token_span_tuple_list = assign_spans(text)
     token_tags = []
     # Initializes the labels
-    b_tox = 'B-Tox'
-    i_tox = 'I-Tox'
+    tox = 'Tox'
     out = 'O'
     # Assigns the previous tag to an Out
     tag = out
-    prev_tag = out
     # iterates over all the tokens and spans in the list
     for token, token_span in token_span_tuple_list:
         # checks to see if any index of the current token is in the toxic_span list
         check = any(item in token_span for item in toxic_span)
         if check:
-            # if the previous tag was an Out, B-Tox is assigned, otherwise I-Tox is assigned
-            if prev_tag == out:
-                tag = b_tox
-                prev_tag = b_tox
-            else:
-                tag = i_tox
-                prev_tag = i_tox
+            tag = tox
         # If the check fails, the token is assigned an Out
         else:
             tag = out
-            prev_tag = out
         token_tags.append(tag)
     return token_tags
 
@@ -134,7 +126,6 @@ def format_bert(read_file, write_file):
     Converts a file into expected bert format
     :param write_file: File to write to
     :param read_file: The tsd_file to be converted
-    :return: Returns a pandas dataframe formatted properly
     """
     initial_df = read_raw_data(read_file)
     spans = initial_df['spans']
@@ -150,3 +141,27 @@ def format_bert(read_file, write_file):
             # temp_df['dummy'] = np.full([len(tokens)], 'O')
             temp_df.to_csv(f, sep=' ', index=False, header=False)
             f.write(os.linesep)
+
+
+def format_for_new_engine(read_file, write_file):
+    """
+    Converts a file into expected engine format
+    :param write_file: File to write to
+    :param read_file: The tsd_file to be converted
+    """
+    initial_df = read_raw_data(read_file)
+    initial_df['tokenize'] = [tokenize_text(text) for text in initial_df['text']]
+    initial_df['tags'] = [tag_toxic_spans(text, initial_df['spans'][i]) for i, text in
+                          enumerate(initial_df['text'])]
+
+    tag_list = []
+    for i, thing in initial_df['tags'].iteritems():
+        for item in thing:
+            tag_list.append(item)
+
+    flatdata = pd.DataFrame([(index, value) for (index, values)
+                             in initial_df['tokenize'].iteritems() for value in values],
+                            columns=['index', 'tokens']).set_index('index')
+    flatdata['tags'] = tag_list
+    flatdata['Text #'] = ['Text: {}'.format(i + 1) for i in flatdata.index]
+    flatdata.to_csv(write_file, sep='\t', columns=['Text #', 'tokens', 'tags'], index=False, header=True)

@@ -1,0 +1,14 @@
+A list of items to run this engine:
+
+On Python version 3.8:
+
+Library	Version
+numpy	1.19.3
+pandas	1.1.4
+transformers	3.5.0
+torch	1.7.0+cpu
+nltk	3.5
+tqdm	*most recent
+sklearn	*most recent
+
+ex: pip install numpy==1.19.3

@@ -26,7 +26,6 @@ class BERTDataset:
     def __getitem__(self, item):
         text = self.texts[item]
         tags = self.tags[item]
-        
         ids = []
         target_tag = []
         for i, s in enumerate(text):
@@ -126,7 +125,7 @@ def train_model(fold):
         print(p)
 """
 def preprocess_data(data_path):
-    df = pd.read_csv(data_path, sep='\t')
+    df = pd.read_csv(data_path, sep='\t', keep_default_na=False)
     enc_tag = preprocessing.LabelEncoder()
     
     df.loc[:, 'tags'] = enc_tag.fit_transform(df['tags'])
@@ -150,6 +149,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         final_loss = final_loss + loss.item()
     return final_loss / len(data_loader)
 
+
 def eval_fn(data_loader, model, device):
     model.eval()
     final_loss = 0
@@ -161,35 +161,50 @@ def eval_fn(data_loader, model, device):
     return final_loss / len(data_loader)
 
 
+def preprocess_predict(data_path):
+    df = pd.read_csv(data_path, sep='\t')
+    enc_tag = preprocessing.LabelEncoder()
+    
+    df.loc[:, 'tags'] = enc_tag.fit_transform(df['tags'])
+    
+    sentences = df.groupby('Text #')['tokens'].apply(list).values
+    tag = df.groupby('Text #')['tags'].apply(list).values
+    return sentences, tag, enc_tag
+
 
 if __name__ == '__main__':
 
-    data_path = os.path.join('toxic_data', 'trial_new_engine_format.txt')
+    data_path = os.path.join('toxic_data', 'train_2345.txt')
     sentences, tag, enc_tag = preprocess_data(data_path)
     
     meta_data = {
         'enc_tag': enc_tag 
     }
-    print(enc_tag.classes_)
+    # print(enc_tag.classes_)
     num_tag = len(list(enc_tag.classes_))
-    '''    
+    
+    joblib.dump(meta_data, 'meta_data.bin')
+    
     BATCH_SIZE = 32
     EPOCHS = 3
+    '''
     (
         train_sentences,
         test_sentences,
         train_tag,
         test_tag
     ) = model_selection.train_test_split(sentences, tag, random_state=42, test_size=0.1)
-    
+    '''
+    train_sentences = sentences
+    train_tag = tag
     train_dataset = BERTDataset(
-        train_sentences, train_tag, max_len=256
+        train_sentences, train_tag, max_len=338
     )
     # collate_fn=lambda x: x, collate_fn=lambda x: x
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE
     )
-    
+    '''
     test_dataset = BERTDataset(
         test_sentences, test_tag, max_len=256
     )
@@ -197,7 +212,7 @@ if __name__ == '__main__':
     test_data_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=BATCH_SIZE
     )
-    
+    '''
     num_train_steps = int(len(train_sentences) / BATCH_SIZE * EPOCHS)
     
     device = torch.device('cpu')
@@ -205,7 +220,7 @@ if __name__ == '__main__':
     model.to(device)
     
     param_optimizer = list(model.named_parameters())
-    no_decay = ['bias', 'LayerNrom.bias', 'LayerNorm.weight']
+    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
     optimizer_parameters = [
         {
             'params': [
@@ -225,47 +240,54 @@ if __name__ == '__main__':
         optimizer, num_warmup_steps=0, num_training_steps=num_train_steps
     )
     print('----TRAINING------')
-    best_loss = np.inf
+    # best_loss = np.inf
     for epoch in range(EPOCHS):
         train_loss = train_fn(train_data_loader, model, optimizer, device, scheduler)
+        print('Train Loss:', train_loss)
+        '''
         test_loss = eval_fn(test_data_loader, model, device)
         print('Train Loss:', train_loss, '| Test Loss:', test_loss)
         if test_loss < best_loss:
             torch.save(model.state_dict(), 'toxic_test_model')
             best_loss = test_loss
+        '''
     print('------TRAINING DONE------')
-    '''    
+    torch.save(model.state_dict(), 'toxic_bert_model')
+    print('MODEL SAVED AS toxic_bert_model')
+    '''
     print('------PREDICTING---------')
     
     
+    meta_data = joblib.load('meta_data.bin')
+    enc_tag = meta_data['enc_tag']
+    num_tag = len(list(enc_tag.classes_))
     
-    sentence = "Am I an idiot or is there a giant moron over there?"
-    sentence = sentence.split()
+    sentence1 = "samtsirhc is Veryh Great( lol)."
+    sentence1 = sentence1.split()
     
-    tokenized_sentence = transformers.BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True).encode(sentence)
+    tokenized_sentence1 = transformers.BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True).encode(sentence1)
     
     
     
-    test_dataset = BERTDataset([sentence], [[1] * len(sentence)])
-    num_train_steps = 1
+    test_dataset = BERTDataset([sentence1], [[1] * len(sentence1)])
+    num_train_steps = 20
     
     
     device = torch.device('cpu')
     model = EntityModel(num_train_steps, num_tag)
-    model.load_state_dict(torch.load('toxic_test_model'))
+    model.load_state_dict(torch.load('toxic_bert_model'))
     model.to(device)
     
     with torch.no_grad():
         model.eval()
-        data = test_dataset[0]
+        data = test_dataset
         for k, v in data.items():
             data[k] = v.to(device).unsqueeze(0)
-        tag, stuff = model(**data)
-        print(tokenized_sentence)
-        # print(tag)
-        # enc_tag.inverse_transform( ------ .reshape(-1)[:len(tokenized_sentence)]
-        print(enc_tag.inverse_transform(tag.argmax(2).cpu().numpy().reshape(-1))[:len(tokenized_sentence)])
-    
+        tag, _ = model(**data)
+        print(tokenized_sentence1)
+        print(sentence1)
+        print(enc_tag.inverse_transform(tag.argmax(2).cpu().numpy().reshape(-1))[1:len(tokenized_sentence1) - 1])
+    '''
     
     
     
