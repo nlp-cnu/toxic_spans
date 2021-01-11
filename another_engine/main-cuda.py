@@ -146,7 +146,7 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
         loss.backward()
         optimizer.step()
         scheduler.step()
-        final_loss = final_loss + loss.item()
+        final_loss = final_loss + float(loss.item())
     return final_loss / len(data_loader)
 
 
