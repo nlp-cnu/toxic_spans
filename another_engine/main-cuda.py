@@ -185,7 +185,7 @@ if __name__ == '__main__':
     
     joblib.dump(meta_data, 'meta_data.bin')
     
-    BATCH_SIZE = 32
+    BATCH_SIZE = 24
     EPOCHS = 3
     '''
     (
