@@ -305,7 +305,7 @@ if __name__ == '__main__':
     joblib.dump(meta_data, meta_data_path)
     # Setting batch size and number of epochs
     BATCH_SIZE = 16
-    EPOCHS = 15
+    EPOCHS = 8
     '''
     (
         train_sentences,
