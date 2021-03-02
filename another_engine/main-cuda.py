@@ -1,9 +1,6 @@
 # Sourcing for this code is from the following:
 # https://www.youtube.com/watch?v=MqQ7rqRllIc
 # https://www.youtube.com/watch?v=oreIJQZ40H0&t=1594s
-# Sourcing for this code is from the following:
-# https://www.youtube.com/watch?v=MqQ7rqRllIc
-# https://www.youtube.com/watch?v=oreIJQZ40H0&t=1594s
 import os
 import numpy as np
 from tqdm import tqdm
@@ -55,12 +52,10 @@ class BERTDataset:
         token_type_ids = [0] * len(ids)
         # Padding the data to fit the maximum sequence length requirement
         padding_len = self.max_len - len(ids)
-
         ids = ids + ([0] * padding_len)
         mask = mask + ([0] * padding_len)
         token_type_ids = token_type_ids + ([0] * padding_len)
         target_tag = target_tag + ([0] * padding_len)
-
         # returns data in the form of a dictionary
         return {
             'ids': torch.tensor(ids, dtype=torch.long),
@@ -222,13 +217,38 @@ def train_fn(data_loader, model, optimizer, device, scheduler):
 # Evaluation function, not used yet.
 def eval_fn(data_loader, model, device):
     model.eval()
+    # final loss: how well the model does over the batch of data
     final_loss = 0
-    for data in data_loader:
+    final_f1 = 0
+    final_accuracy = 0
+    final_precision = 0
+    final_recall = 0
+    # Using tqdm, a library that shows a loading bar so I can track time
+    for data in tqdm(data_loader, total=len(data_loader)):
         for k, v in data.items():
             data[k] = v.to(device)
-        _, loss = model(**data)
-        final_loss = final_loss + loss.item()
-    return final_loss / len(data_loader)
+        # Resets the calculated gradient???
+        # Grabs the loss from the model
+        tag, loss, met = model(**data)
+        # Calculating the average metrics
+        final_loss += float(loss.item())
+        final_f1 += met['f1']
+        final_accuracy += met['accuracy']
+        final_precision += met['precision']
+        final_recall += met['recall']
+    average_loss = final_loss / len(data_loader)
+    average_f1 = final_f1 / len(data_loader)
+    average_precision = final_precision / len(data_loader)
+    average_recall = final_recall / len(data_loader)
+    average_accuracy = final_accuracy / len(data_loader)
+    mets = {
+        'loss': average_loss,
+        'f1': average_f1,
+        'precision': average_precision,
+        'recall': average_recall,
+        'accuracy': average_accuracy
+    }
+    return mets
 
 
 '''
@@ -284,7 +304,7 @@ def recall(predictions, gold):
     """
     if len(gold) == 0:
         return 1 if len(predictions) == 0 else 0
-    top = len(set(predictions).intersection(set(gold)))
+    top = 2 * len(set(predictions).intersection(set(gold)))
     bottom = len(set(gold))
     return top / bottom
 
@@ -293,7 +313,7 @@ if __name__ == '__main__':
     # Establishing write paths for all the glorious files
     data_path = 'train_full.txt'
     meta_data_path = 'meta_data_test.bin'
-    model_dict_path = 'toxic_bert_model_full_test'
+    model_dict_path = 'toxic_bert_model_full_data'
 
     # Loading data, tags, and encoder
     sentences, tag, enc_tag = preprocess_data(data_path)
@@ -304,16 +324,16 @@ if __name__ == '__main__':
     # Saving encoder to bin
     joblib.dump(meta_data, meta_data_path)
     # Setting batch size and number of epochs
-    BATCH_SIZE = 16
-    EPOCHS = 8
-    '''
+    BATCH_SIZE = 32
+    EPOCHS = 15
+
     (
         train_sentences,
         test_sentences,
         train_tag,
         test_tag
     ) = model_selection.train_test_split(sentences, tag, random_state=42, test_size=0.1)
-    '''
+
     # Creating a BERTDataset object, 338 is the largest item in our dataset
     train_sentences = sentences
     train_tag = tag
@@ -325,15 +345,15 @@ if __name__ == '__main__':
     train_data_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE
     )
-    '''
+
     test_dataset = BERTDataset(
-        test_sentences, test_tag, max_len=256
+        test_sentences, test_tag, max_len=338
     )
 
     test_data_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=BATCH_SIZE
     )
-    '''
+
     # Setting the number of training steps
     num_train_steps = int(len(train_sentences) / BATCH_SIZE * EPOCHS)
 
@@ -343,7 +363,6 @@ if __name__ == '__main__':
 
     model = EntityModel(num_train_steps, num_tag)
     # Can load model from the dict if necessary
-    # model.load_state_dict(torch.load('toxic_model_full_trial_2/toxic_bert_model_full'))
     # Pushing model to the device
     model.to(device)
 
@@ -376,31 +395,33 @@ if __name__ == '__main__':
     precisions = []
     recalls = []
     accuracies = []
-    print('----TRAINING------')
     # Supposed to train until this loss isn't beat
-    best_loss = np.inf
+    best_f1 = 0
     # Train the model over the dataset EPOCH number of times
     for epoch in range(EPOCHS):
         # Calls the training function, stores the loss
-        mets = train_fn(train_data_loader, model, optimizer, device, scheduler)
-        losses.append(mets['loss'])
-        f1s.append(mets['f1'])
-        precisions.append(mets['precision'])
-        recalls.append(mets['recall'])
-        accuracies.append(mets['accuracy'])
-        print('Train Loss:', mets['loss'])
-        print('Train f1:', mets['f1'])
-        print('Train precision:', mets['precision'])
-        print('Train recall:', mets['recall'])
-        print('Train accuracy:', mets['accuracy'])
+        print('----TRAINING------')
+        train_mets = train_fn(train_data_loader, model, optimizer, device, scheduler)
+        print('---EVALUATING-----')
+        eval_mets = eval_fn(test_data_loader, model, device)
+        losses.append((train_mets['loss'], eval_mets['loss']))
+        f1s.append((train_mets['f1'], eval_mets['f1']))
+        precisions.append((train_mets['precision'], eval_mets['precision']))
+        recalls.append((train_mets['recall'], eval_mets['recall']))
+        accuracies.append((train_mets['accuracy'], eval_mets['accuracy']))
+        print('Train Loss:', train_mets['loss'], 'Eval Loss:', eval_mets['loss'])
+        print('Train f1:', train_mets['f1'], 'Eval f1:', eval_mets['f1'])
+        print('Train precision:', train_mets['precision'], 'Eval precision:', eval_mets['precision'])
+        print('Train recall:', train_mets['recall'], 'Eval recall:', eval_mets['recall'])
+        print('Train accuracy:', train_mets['accuracy'], 'Eval accuracy:', eval_mets['accuracy'])
         # Stores the model in a dictionary
-        if mets['loss'] < best_loss:
+        if eval_mets['f1'] > best_f1:
             torch.save(model.state_dict(), model_dict_path)
-            best_loss = mets['loss']
+            best_loss = eval_mets['f1']
 
     metrics_df = pd.DataFrame(
         {'loss': losses, 'f1': f1s, 'precision': precisions, 'recall': recalls, 'accuracy': accuracies})
-    metrics_df.to_csv('metrics_example.csv')
+    metrics_df.to_csv('metrics.csv')
 
     print('------TRAINING DONE------')
     print('MODEL SAVED AS {}'.format(model_dict_path))
