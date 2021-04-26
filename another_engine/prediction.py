@@ -11,10 +11,10 @@ from main import BERTDataset, EntityModel
 
 if __name__ == '__main__':
     # Gets file paths for the encoder, model, eval data, and a write path for all the tags
-    meta_path = os.path.join('toxic_model_full_trial_3', 'meta_data_full.bin')
-    model_path = os.path.join('toxic_model_full_trial_3', 'toxic_bert_model_full')
+    meta_path = os.path.join('full_model_seq_128', 'meta_data_test.bin')
+    model_path = os.path.join('full_model_seq_128', 'toxic_bert_model_full_test')
     eval_path = os.path.join('toxic_data', 'tsd_test.csv')
-    write_path = os.path.join('tsd_eval_tags_trial_3.csv')
+    write_path = os.path.join('tsd_eval_tags_seq_128.csv')
     
     print('------PREDICTING---------')
     
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # Loading the model and sending it to the device
     device = torch.device('cpu')
     model = EntityModel(num_train_steps, num_tag)
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     
     # Predicts each item in the evaluation dataset individually :/ couldn't figure this out
@@ -48,7 +48,7 @@ if __name__ == '__main__':
             data = test_dataset[0]
             for k, v in data.items():
                 data[k] = v.to(device).unsqueeze(0)
-            tag, _ = model(**data)
+            tag, _, _ = model(**data)
             # print(len(tokenized_sentence1[1:-1]), tokenized_sentence1[1:-1])
             # print(len(sentence1), sentence1)
             # print(len(enc_tag.inverse_transform(tag.argmax(2).cpu().numpy().reshape(-1))[1:len(tokenized_sentence1) - 1]),
