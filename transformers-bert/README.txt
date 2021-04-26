@@ -1,0 +1,1 @@
+This folder contains the necessary tools to use the base transformers BERT model from https://github.com/huggingface/transformers/tree/master/examples/pytorch/token-classification. The preprocess.py file has utilities needed to reformat the dataset, and the labels.txt file has the BIO tags from the task. Command has the command that runs transformers-bert.
